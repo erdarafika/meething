@@ -12,9 +12,6 @@ export default class SFU extends EventEmitter {
 
     init() {
         console.log("SFU::Init");
-        if (this.config.autoRequestMedia) {
-            // this.startLocalVideo()
-        }
         this.sfuRoom.on("@open", ({ peers }) => {
             console.log(`${peers.length} peers in this room.`);
             this.emit("readyToCall");
@@ -44,27 +41,27 @@ export default class SFU extends EventEmitter {
         });
     }
 
-    joinRoom(room) {
+    joinRoom(room, peerId) {
         console.log("SFU::Join %s meething", room);
         this.room = room;
-        this.sfuRoom.join(room);
+        this.sfuRoom.join(room, peerId);
     }
 
     async startBroadcast() {
         const video = this.config.localVideoEl;
-        await this.sfuRoom.sendVideo(video.srcObject.getVideoTracks()[0]);
-        await this.sfuRoom.sendAudio(video.srcObject.getAudioTracks()[0]);
-        
+        var videoProducer = await this.sfuRoom.sendVideo(video.srcObject.getVideoTracks()[0]);
+        var audioProducer = await this.sfuRoom.sendAudio(video.srcObject.getAudioTracks()[0]);
+
+        var self = this;
         // Attach SoundMeter to Local Stream
         if (SoundMeter) {
-          // Soundmeter
-          const soundMeter = new SoundMeter(function () {
-            console.log('Imm Speaking! Sending metadata mesh focus...');
-              med.metaData.sendControlData({ username: med.username, id: med.socketId, talking: true });
-          });
-          soundMeter.connectToSource(video.srcObject);
+            // Soundmeter
+            const soundMeter = new SoundMeter(function () {
+                self.emit("soundmeter");
+            });
+            soundMeter.connectToSource(video.srcObject);
         } else { console.error('no soundmeter!'); }
-        
+
     }
 
     //Move this to a helper?

@@ -11,10 +11,10 @@ export default class Room extends EventEmitter {
         this.recvTransport = null;
     }
 
-    join(room) {
+    join(roomId, peerId) {
         console.warn("room.join()");
-        const wsTransport = new WebSocket("wss://meething.hepic.tel:2345/" + room, "protoo");
 
+        const wsTransport = new WebSocket(`wss://meething.hepic.tel:2345/?roomId=${room}&peerId=${peerId}`, "protoo");
         this.peer = new Peer(wsTransport);
         this.peer.on("open", this.onPeerOpen.bind(this));
         this.peer.on("request", this.onPeerRequest.bind(this));
@@ -23,6 +23,8 @@ export default class Room extends EventEmitter {
         this.peer.on("disconnected", console.error);
         this.peer.on("close", console.error);
         this.peer.on("peers", this.onPeers.bind(this));
+
+        console.log(this.peer.id);
     }
 
     async sendAudio(track) {
